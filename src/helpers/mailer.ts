@@ -7,34 +7,35 @@ export const sendEmail = async({email,emailType,userId}:any) => {
       const hashedToken = await bcryptjs.hash(userId.toString(), 10)
 
       if (emailType === 'VERIFY') {
+        console.log(emailType);
+        
         await User.findByIdAndUpdate(
           userId,
           {
           $set :{
           verifyToken : hashedToken,
-          verifyTokenExpiry: Date.now() + 3600000
+          verifyTokenExpiry: new Date(Date.now() + 3600000)
         }
-          })
+        })
       } else if (emailType === 'RESET'){
         await User.findByIdAndUpdate(
           userId,
           { 
           $set: {
           forgetPasswordToken : hashedToken,
-          forgetPasswordTokenExpiry: Date.now() + 3600000
+          forgetPasswordTokenExpiry: new Date(Date.now() + 3600000)
         }
           })
       }
 
-        const transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: {
-              user: "36b7a16aef06b7",
-              pass: "90ee4700055c07"
-            },
-          });
+      var transport = nodemailer.createTransport({
+        host: "sandbox.smtp.mailtrap.io",
+        port: 2525,
+        auth: {
+          user: "36b7a16aef06b7",
+          pass: "90ee4700055c07"
+        }
+      });
 
           const mailOptions = {
             from: "nikhilkumarmandal946@gmail.com",
@@ -45,7 +46,7 @@ export const sendEmail = async({email,emailType,userId}:any) => {
             </p>`,
           }
 
-    const mailResponse = await transporter.sendMail(mailOptions)
+    const mailResponse = await transport.sendMail(mailOptions)
     return mailResponse      
     } catch (error:any) {
         throw new Error(error.message)
